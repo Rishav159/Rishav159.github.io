@@ -1,0 +1,15 @@
+.post-holder {
+  .row {
+    display: block;
+  }
+  .column {
+    flex: 50%;
+    width: 50%;
+    &.right-column {
+      position: absolute;
+      margin-left: 48%;
+      top: 0;
+      margin-top: 100px;
+    }
+  }
+}

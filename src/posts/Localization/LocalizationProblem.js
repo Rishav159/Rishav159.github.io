@@ -3,33 +3,13 @@ var vpHeight,vpWidth;
 
 let obsProbMatrix = {
     door : {
-        obs_door : 0.99,
-        obs_wall : 0.01
+        obs_door : 1,
+        obs_wall : 0
     },
     wall : {
-        obs_door : 0.01,
-        obs_wall : 0.99
+        obs_door : 0,
+        obs_wall : 1
     }
-}
-let moveProbMatrix = {
-    right : {
-        "1" : 0.95,
-        "0" : 0.02,
-        "2" : 0.02,
-        "random" : 0.01
-    },
-    left : {
-        "-1" : 0.95,
-        "0" : 0.01,
-        "-2" : 0.01,
-        "random" : 0.01
-    }
-}
-
-
-
-function getRadius(circumference) {
-    return circumference/(2*Math.PI);
 }
 
 function getCircumference(radius) {
@@ -55,13 +35,15 @@ class Obstacle {
         this.degreeTheta = this.theta*180 / Math.PI;
     }
     draw() {
-        this.ele.append("path")
+        this.obstacleElement = this.ele.append("path")
              .attr("d", "M"+this.x+" "+this.y+" a "+this.radius+" "+this.radius+" 0 0 1 0 "+(this.radius*2)+" a "+this.radius+" "+this.radius+" 0 0 1 0 "+(this.radius*(-2)))
              .attr("fill","none")
              .attr("stroke",this.type === "door"?"#DEB887":"gray")
              .attr("stroke-width", 20)
              .attr("stroke-dasharray",this.length+","+(this.circumference-this.length))
              .attr("transform" , "rotate("+this.degreeTheta+","+this.centerX+","+this.centerY+")")
+             .attr("index",this.index)
+             .style("cursor","pointer")
              .attr("class", "obstacle c"+this.index);
     }
 }
@@ -106,7 +88,6 @@ class Bar {
             .attr("transform", `translate(-15,0)`);
         this.text = this.barHeight.append("text")
                     .attr("transform","translate(0,-10)")
-                    .attr("fill","white")
                     .style("text-anchor","middle")
                     .html(`${this.value.toFixed(2)}`)
     }
@@ -135,16 +116,16 @@ class Agent {
         this.ele = config.ele;
         this.centerX = config.centerX;
         this.centerY = config.centerY;
+        this.transitionDuration = 200;
     }
 
     move() {
         this.theta = this.position * (2*Math.PI / this.totalParts);
         this.theta += (Math.PI / this.totalParts);
         this.degreeTheta = (this.theta*180 / Math.PI)%360;
-        this.robotRotate.transition().duration(200)
+        this.robotRotate.transition().duration(this.transitionDuration)
                         .attr("transform","rotate("+(this.degreeTheta)+")")
     }
-
     changePosition(newPosition) {
         this.position = newPosition;
         this.move();
@@ -157,6 +138,34 @@ class Agent {
     goLeft() {
         this.position = (this.position-1+this.totalParts)%this.totalParts;
         this.move();
+    }
+    show() {
+        this.robotEle.transition().duration(200).attr("opacity",1);
+    }
+    hideAnimate() {
+        let oldDegreeTheta = this.degreeTheta;
+        this.position = Math.floor(Math.random() * this.totalParts);
+        this.theta = this.position * (2*Math.PI / this.totalParts);
+        this.theta += (Math.PI / this.totalParts);
+        this.degreeTheta = (this.theta*180 / Math.PI)%360;
+        let self = this;
+        this.robotRotate.transition().duration(2000)
+                        .attrTween("transform",function() {
+                            let rotationInterpolate = d3.interpolate(oldDegreeTheta, 720 + self.degreeTheta );
+                            return function(t) {
+                                return `rotate(${rotationInterpolate(t)})`;
+                            }
+                        });
+        this.robotEle.transition().duration(1500)
+                        .attrTween("opacity",function() {
+                            let opacityInterpolation = d3.interpolate(1, 0 );
+                            return function(t) {
+                                return `${opacityInterpolation(t)}`;
+                            }
+                        })
+    }
+    hide() {
+        // this.robotEle.attr("opacity",0);
     }
     draw() {
         this.theta = this.position * (2*Math.PI / this.totalParts);
@@ -173,6 +182,7 @@ class Agent {
 
         this.robotEle = this.robotRotate.append("g")
                 .attr("class", "robot-group")
+                .attr("fill","white")
                 .attr("transform","rotate(180) translate(-15.5 -16)");
         this.robotEle
                 .append("path")
@@ -183,6 +193,75 @@ class Agent {
     }
 }
 
+class Percept {
+    constructor({ele, value}) {
+        this.ele = ele;
+        this.value = value;
+    }
+    draw() {
+        this.perceptWrapper = this.ele.append('g')
+                                .attr("class", "perceptWrapper")
+                                .attr("width",100)
+                                .attr("transform","translate(50,0)");
+        this.activePercept = this.perceptWrapper
+                                    .append("rect")
+                                    .attr("class", "activePercept")
+                                    .attr("width", 100)
+                                    .attr("height", 100)
+                                    .attr("stroke","black")
+                                    .attr("stroke-width", 2)
+                                    .style("fill",this.value === "door"?"#DEB887":"gray");
+
+        this.perceptContainer = this.perceptWrapper
+                                    .append("rect")
+                                    .attr("class", "perceptContainer")
+                                    .attr("width", 100)
+                                    .attr("height", 100)
+                                    .attr("fill","red")
+                                    .attr("stroke","black")
+                                    .attr("stroke-width", 2)
+                                    .attr("fill-opacity","0");
+
+    }
+    transition({direction, newValue}) {
+        this.secondaryPercept = this.perceptWrapper
+            .append("rect")
+            .attr("class", "activePercept")
+            .attr("width", 0)
+            .attr("height", 100)
+            .attr("stroke","black")
+            .attr("stroke-width", 2)
+            .style("fill",newValue === "door"?"#DEB887":"gray")
+        if(direction == "left") {
+            this.activePercept
+                .transition()
+                .duration(200)
+                .attr("width",0)
+                .attr("x",100)
+                .remove();
+            this.secondaryPercept
+                        .transition()
+                        .duration(200)
+                        .attr("width",100);
+                                        
+        } else {
+            this.activePercept
+                .transition()
+                .duration(200)
+                .attr("width",0)
+                .remove();
+
+                                        
+            this.secondaryPercept       
+                        .attr("x",100)
+                        .transition()
+                        .duration(200)
+                        .attr("width",100)
+                        .attr("x",0);
+        }
+        this.activePercept = this.secondaryPercept
+    }
+}
 function observeAtDoor(obstacle) {
     let r = Math.random();
     if(obstacle.type == "door") {
@@ -200,107 +279,70 @@ function observeAtDoor(obstacle) {
     }
 }
 
-function stochasticallyGo(direction,position, totalParts) {
-    let r = Math.random();
-    if(direction == "right") {
-        if(r <= moveProbMatrix["right"]["1"]) {
-            return (position + 1 + totalParts)%totalParts;
+class Status {
+    constructor({currentState, startCallback, ele,x,y, width = 100, height=50}) {
+        this.state = currentState;
+        this.ele = ele;
+        this.width = width;
+        this.height = height;
+        this.x = x - this.width/2;
+        this.y = y - this.height/2;
+        let self = this;
+        this.startCallback = startCallback;
+        this.startHandler = function() {
+            self.startDiagram();
+            self.startCallback();
         }
-        if(r <= moveProbMatrix["right"]["1"] + moveProbMatrix["right"]["0"]) {
-            return position;
-        }
-        if(r <= moveProbMatrix["right"]["1"] + moveProbMatrix["right"]["0"] + moveProbMatrix["right"]["2"]) {
-            return (position + 2 + totalParts)%totalParts;
-        }
-        return Math.floor(Math.random()*totalParts);
     }
-    if(direction == "left") {
-        if(r <= moveProbMatrix["left"]["-1"]) {
-            return (position -1 + totalParts)%totalParts;
-        }
-        if(r <= moveProbMatrix["left"]["-1"] + moveProbMatrix["left"]["0"]) {
-            return position;
-        }
-        if(r <= moveProbMatrix["left"]["-1"] + moveProbMatrix["left"]["0"] + moveProbMatrix["left"]["-2"]) {
-            return (position - 2 + totalParts)%totalParts;
-        }
-        return Math.floor(Math.random()*totalParts);
+    startDiagram() {
+        this.statusHolder.select("rect").transition().duration(200).style("opacity",0).remove();
+        this.statusHolder.select("text").transition().duration(200).style("opacity",0).remove();
+        this.moves = 0;
+        this.gameText = this.statusHolder.append("g").attr("class","game-status")
+                        .append("text")
+                        .style("text-anchor","middle")
+                        .style("dominant-baseline","central")
+                        .attr("fill","white")
+                        .style("cursor","pointer")
+                        .attr("transform",`translate(${this.width/2},${this.height/2})`)
+                        .text(`Moves ${this.moves}`);
     }
+    incrementMove() {
+        this.moves = this.moves + 1;
+        this.gameText.text(`Moves ${this.moves}`);
+    }
+    restart() {
+        this.statusHolder.selectAll("*").remove();
+        this.statusHolder.append("rect")
+        .attr("class","start-button")
+        .attr("height",this.height)
+        .attr("width",this.width)
+        .attr("stroke","white")
+        .attr("stroke-width",0)
+        .attr("fill","#202060")
+        .attr("fill-opacity","50%")
+        .style("cursor","pointer")
+        .on("click",this.startHandler);
+    this.statusHolder
+        .append("text")
+        .style("text-anchor","middle")
+        .style("dominant-baseline","central")
+        .attr("fill","white")
+        .style("cursor","pointer")
+        .attr("transform",`translate(${this.width/2},${this.height/2})`)
+        .text("Start")
+        .on("click",this.startHandler);
+    }
+    draw() {
+        this.statusHolder = this.ele.append("g").attr("class","status").attr("transform",`translate(${this.x},${this.y})`);
+        this.restart();
+    }
+
 }
-
-function calculateProbabilities(bars,obstacles,agent,move) {
-    let probabilities = _.pluck(bars,"value");
-    let totalParts = probabilities.length;
-    let newProbabilities = _.map(_.range(totalParts), function(){return 0});
-    _.each(probabilities,function(probability,index) {
-        if(move === "right") {
-            newProbabilities[(index+1+totalParts)%totalParts] += probability*moveProbMatrix["right"]["1"];
-            newProbabilities[index] += probability*moveProbMatrix["right"]["0"];
-            newProbabilities[(index+2+totalParts)%totalParts] += probability*moveProbMatrix["right"]["2"];
-            newProbabilities = _.map(newProbabilities,function(np) {
-                return np + probability*moveProbMatrix["right"]["random"]/totalParts;
-            });
-        }else if(move === "left") {
-            newProbabilities[(index-1+totalParts)%totalParts] += probability*moveProbMatrix["left"]["-1"];
-            newProbabilities[index] += probability*moveProbMatrix["left"]["0"];
-            newProbabilities[(index-2+totalParts)%totalParts] += probability*probability*moveProbMatrix["left"]["-2"];
-            newProbabilities = _.map(newProbabilities,function(np) {
-                return np + probability*probability*moveProbMatrix["left"]["random"]/totalParts;
-            });
-        }else{
-            newProbabilities[index] = probabilities[index];
-        }
-    });
-    
-    let agentObservation = observeAtDoor(obstacles[agent.position]);
-    agentObservation = (agentObservation)?"door":"wall";
-
-    agent.robotEle.style("fill",(agentObservation == "wall")?"gray":"#DEB887");
-
-    newProbabilities =  _.map(newProbabilities, function(np, index) {
-        let type = obstacles[index].type;
-        if(type == "door") {
-            if(agentObservation == "door") {
-                return np*obsProbMatrix["door"]["obs_door"]
-            }else{
-                return np*obsProbMatrix["door"]["obs_wall"];
-            }
-        }else{
-            if(agentObservation == "wall") {
-                return np*obsProbMatrix["wall"]["obs_wall"];
-            }else{
-                return np*obsProbMatrix["wall"]["obs_door"];
-            }
-        }
-    });
-    let sum = _.reduce(newProbabilities,function(memo,num) {return memo+num},0);
-    newProbabilities = _.map(newProbabilities,function(np){return np/sum});
-    _.each(bars,function(bar,index) {
-        bar.resetValue(newProbabilities[index])
-    });
-}
-
-function app(obstacles, bars, agent) {
-    let newPosition;
-    calculateProbabilities(bars,obstacles, agent,"");
-    $(document).keydown(function(e) {
-        switch(e.which) {
-            case 37: newPosition = stochasticallyGo("left",agent.position,agent.totalParts); 
-                     agent.changePosition(newPosition);
-                     calculateProbabilities(bars,obstacles, agent,"left");
-                     break;
-            case 39: newPosition = stochasticallyGo("right",agent.position,agent.totalParts); 
-                     agent.changePosition(newPosition);
-                     calculateProbabilities(bars,obstacles, agent,"right");
-                     break;
-        }
-    });
-}
-
-const LocalizationDiagram = {
+const LocalizationProblem = {
     init: function(selector, height, width) {
         vpHeight = height;
-        vpWidth = width;        
+        vpWidth = width;    
         let wrapper = d3.select(selector);
         let svg = wrapper.append("svg")
         .attr("height", vpHeight)
@@ -336,21 +378,67 @@ const LocalizationDiagram = {
                 ele : barEle,
                 value : 1/parts
             });
-            bar.draw();
+            // bar.draw();
             bars.push(bar);
         });
         
         let agent = new Agent({
             ele : svg,
             parts : parts,
-            position : 0,
+            position : Math.floor(Math.random() * parts),
             centerX : vpWidth/2,
             centerY : vpHeight/2,
             radius : radius - 30
         });
+        let agentObservation;
         agent.draw();
-        app(obstacles,bars,agent)
+        agentObservation = observeAtDoor(obstacles[agent.position]);
+        agentObservation = (agentObservation)?"door":"wall";
+        let percept = new Percept({ele: svg, value: agentObservation});
+        percept.draw();
+
+        let status = new Status({ele: svg, currentState: "inactive",x:vpWidth/2,y:vpHeight/2});
+        let startHandler = function() {
+            agent.hideAnimate();
+            percept.transition({direction: "right", newValue: agent.position});
+            $(document).off("keydown").keydown(function(e) {
+                let agentObservation;
+                let newPosition;
+                switch(e.which) {
+                    case 37:
+                            newPosition = (agent.position - 1 + agent.totalParts)%agent.totalParts;
+                            agent.changePosition(newPosition);
+                            agentObservation = observeAtDoor(obstacles[agent.position]);
+                            status.incrementMove();
+                            agentObservation = (agentObservation)?"door":"wall";
+                            percept.transition({direction: "left", newValue:agentObservation});
+                            break;
+                    case 39: 
+                            newPosition = (agent.position + 1 + agent.totalParts)%agent.totalParts;
+                            agent.changePosition(newPosition);
+                            agentObservation = observeAtDoor(obstacles[agent.position]);
+                            status.incrementMove();
+                            agentObservation = (agentObservation)?"door":"wall";
+                            percept.transition({direction: "right", newValue:agentObservation});
+                            break;
+                }
+            });
+            _.each(_.range(parts), function(index) {
+                obstacles[index].obstacleElement.on("click", function(e) {
+                    let clickTarget = parseInt(d3.select(e.target).attr("index"));
+                    if(clickTarget == agent.position) {
+                        status.restart();
+                        $(document).off("keydown");
+                        agent.show();
+                    }
+                });
+            });
+        }
+        status.startCallback = startHandler;
+        status.draw();
+
+
     }
 }
 
-export default LocalizationDiagram;
+export default LocalizationProblem;
