@@ -1,14 +1,15 @@
+import "../_global.scss";
+import "./App.scss"
 import React from "react";
 import { Route, Router, Switch, useRouteMatch } from "react-router-dom";
 import { history } from "../_helpers/history";
-
 import LandingPage from "./LandingPage/LandingPage";
 import PostPage from "./PostPage/PostPage";
 import PageNotFound from "./PageNotFound";
 
 function App() {
   return (
-    <div>
+    <div className="app">
       <Router history={history}>
         <Switch>
           <Route exact path="/" component={LandingPage} />

@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap');
+
+:root {
+  // SPACING
+  // Use these variables for padding & margin
+  --s-xxxl: 128px;
+  --s-xxl:  64px;
+  --s-xl:   48px;
+  --s-l:    32px;
+  --s-m:    24px;
+  --s-b:    16px;
+  --s-s:    12px;
+  --s-xs:   8px;
+  --s-xxs:  4px;
+
+  @media only screen and (max-width: 1024px) {
+    --s-xxxl: 72px;
+    --s-xxl:  56px;
+    --s-xl:   48px;
+    --s-l:    32px;
+    --s-m:    24px;
+    --s-b:    16px;
+    --s-s:    12px;
+    --s-xs:   8px;
+    --s-xxs:  4px;
+  }
+
+  // TYPOGRAPHY
+  --sans-font:             "Inter", "Avenir", "Avenir Next", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --line-height-text:      1.5;
+  --line-height-heading:   1.2;
+  --line-height-min:       1;
+
+  --fs-xxxl: 64px;
+  --fs-xxl:  56px;
+  --fs-xl:   48px;
+  --fs-l:    36px;
+  --fs-m:    32px;
+  --fs-d:    20px;
+  --fs-b:    16px;
+  --fs-s:    14px;
+  --fs-xs:   12px;
+  --fs-xxs:  10px;
+
+  @media only screen and (max-width: 1024px) {
+    --fs-xxxl: 56px;
+    --fs-xxl:  48px;
+    --fs-xl:   32px;
+    --fs-l:    24px;
+    --fs-m:    18px;
+    --fs-d:    16px;
+    --fs-b:    14px;
+    --fs-s:    12px;
+    --fs-xs:   10px;
+  }
+
+  --gutter:               32px;
+  --body-padding:         32px;
+  --max-content-width:    1344px;
+  --nav-height:           80px;
+  --nav-width:            200px;
+  --nav-height-s:         48px;
+
+  @media only screen and (max-width: 1024px) {
+    --body-padding:       32px;
+  }
+  @media only screen and (max-width: 720px) {
+    --gutter:             24px;
+    --body-padding:       24px;
+  }
+
+  // COLORS
+  --color-black:              #000;
+  --color-ink:                #111;
+  --color-grey-darker:        #333;
+  --color-grey-dark:          #666;
+  --color-grey:               #AAA;
+  --color-grey-light:         #DDD;
+  --color-grey-lighter:       #EFEFEF;
+  --color-grey-tint:          #F8F8F8;
+  --color-white:              #FFF;
+  --color-blue-darker:        #002051;
+  --color-blue-dark:          #144897;
+  --color-blue:               #0E6FC0;
+  --color-blue-light:         #65AFEC;
+  --color-blue-tint:          #F2F8FD;
+  --color-orange-darker:      #590904;
+  --color-orange-dark:        #A31A12;
+  --color-orange:             #E95D09;
+  --color-orange-light:       #FDA350;
+  --color-orange-tint:        #FFFAF2;
+  --color-green-dark:         #346F06;
+  --color-green:              #509A16;
+  --color-green-light:        #97CB55;
+  --color-green-lighter:      #E5F2D4;
+  --color-green-tint:         #F7FDF2;
+  --color-yellow:             #E3A608;
+  --color-yellow-light:       #FAE637;
+  --color-yellow-lighter:     #FDF8C3;
+  --color-yellow-tint:        #FFFCF1;
+  --color-red:                #D71104;
+  --color-primary:            #202040;
+  --color-secondary:          #202060;
+  --color-highlighter:        #602080;
+  --color-headings:           #b030b0;
+  --color-font:               #ffffff;
+
+  // GRADIENTS
+  --gradient-student-sidebar: linear-gradient(180deg, #88B452 20.31%, #346F06 100%);
+  --gradient-client-sidebar:  linear-gradient(180deg, #0E6FC0 20.31%, #002051 100%);
+
+  // TRANSITION
+  --transition-all:     all 0.3s ease-out;
+  --transition-timing:  0.3s ease-out;
+
+  @keyframes fadeInOut {
+    0% {opacity: 0.0}
+    4% {opacity: 1.0}
+    33.33% {opacity: 1.0}
+    37.33% {opacity: 0.0}
+    100% {opacity: 0.0}
+  }
+
+  // BORDER
+  // Use these variables for borders
+  --border-radius-circle:  50% 50%;
+  --border-radius-m: 4px;
+  --border-radius-b: 2px;
+  --image-shadow: 0 3px 0 var(--color-blue);
+
+  // BOX-SHADOW
+  --input-focus-shadow: 0 0 0 var(--s-xxs) rgba(101, 175, 236, 0.25);
+  --input-error-focus-shadow: 0 0 0 var(--s-xxs) rgba(255, 77, 79, 0.25);
+}
