@@ -4,8 +4,9 @@ import LocalizationDiagram from "./LocalizationDiagram";
 
 function Localization() {
   useEffect(() => {
-    LocalizationProblem.init(".localization-diagram-holder", $(window).innerHeight(),$(".localization-diagram-holder").innerWidth());
-    LocalizationDiagram.init(".localization-diagram-holder-2", $(window).innerHeight(),$(".localization-diagram-holder").innerWidth());
+    let localizationProblem = new LocalizationProblem({selector: ".localization-diagram-holder"});
+    let localizationDiagram = new LocalizationDiagram(".localization-diagram-holder-2", $(window).innerHeight(),$(".localization-diagram-holder").innerWidth());
+    localizationProblem.start();
   });
   return (
     <div>

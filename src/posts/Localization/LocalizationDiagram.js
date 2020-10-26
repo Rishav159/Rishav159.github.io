@@ -297,8 +297,8 @@ function app(obstacles, bars, agent) {
     });
 }
 
-const LocalizationDiagram = {
-    init: function(selector, height, width) {
+class LocalizationDiagram {
+    constructor(selector, height, width) {
         vpHeight = height;
         vpWidth = width;        
         let wrapper = d3.select(selector);

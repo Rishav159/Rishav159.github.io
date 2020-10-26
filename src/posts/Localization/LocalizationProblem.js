@@ -1,21 +1,3 @@
-var vpHeight,vpWidth;
-
-
-let obsProbMatrix = {
-    door : {
-        obs_door : 1,
-        obs_wall : 0
-    },
-    wall : {
-        obs_door : 0,
-        obs_wall : 1
-    }
-}
-
-function getCircumference(radius) {
-    return 2 * Math.PI * radius;
-}
-
 class Obstacle {
     constructor(config) {
         this.centerX = config.centerX;
@@ -30,81 +12,35 @@ class Obstacle {
         this.theta = this.index*(2*Math.PI/this.totalParts); 
         this.x = this.centerX 
         this.y = this.centerY - this.radius;
-        this.circumference = getCircumference(this.radius);
+        this.circumference = this.getCircumference(this.radius);
         this.length = this.circumference/this.totalParts - 2;
         this.degreeTheta = this.theta*180 / Math.PI;
+        this.color = this.type === "door"?"#DEB887":"gray";
+    }
+    getCircumference(radius) {
+        return 2 * Math.PI * radius;
     }
     draw() {
         this.obstacleElement = this.ele.append("path")
              .attr("d", "M"+this.x+" "+this.y+" a "+this.radius+" "+this.radius+" 0 0 1 0 "+(this.radius*2)+" a "+this.radius+" "+this.radius+" 0 0 1 0 "+(this.radius*(-2)))
              .attr("fill","none")
-             .attr("stroke",this.type === "door"?"#DEB887":"gray")
+             .attr("stroke",this.color)
              .attr("stroke-width", 20)
              .attr("stroke-dasharray",this.length+","+(this.circumference-this.length))
              .attr("transform" , "rotate("+this.degreeTheta+","+this.centerX+","+this.centerY+")")
              .attr("index",this.index)
              .style("cursor","pointer")
-             .attr("class", "obstacle c"+this.index);
+             .attr("class", "obstacle c"+this.index)
+             .on("mouseover", function(d, i) {
+                d3.select(this).transition("hover").duration(50).attr("opacity","0.5");
+             })
+             .on("mouseout", function(d,i) {
+                d3.select(this).transition("hover").duration(50).attr("opacity","1");
+             });
     }
-}
-
-class Bar {
-    constructor(config) {
-        this.totalParts = config.parts;
-        this.index = config.index;
-        this.centerX = config.centerX;
-        this.centerY = config.centerY;
-        this.radius = config.radius;
-        this.ele = config.ele;
-        this.value = config.value || 0;
-
-        this.theta = this.index*(2*Math.PI/this.totalParts);
-        this.theta += (Math.PI / this.totalParts);
-        this.degreeTheta = this.theta*180 / Math.PI;
-        this.width = 30;
-        this.maxHeight = 50;
-        this.height = this.maxHeight * this.value;
-        this.x = this.centerX;
-        this.y = this.centerY;
-    }
-
-    draw() {
-        this.barWrapper = this.ele.append("g")
-            .attr("class","barWrapper")
-            .attr("transform",`translate(${this.x},${this.y - this.radius})`);
-        this.barRotate = this.barWrapper.append('g')
-            .attr("class","barRotate")
-            .style("transform-origin", `0px ${this.radius}px`)
-            .attr("transform",`rotate(${this.degreeTheta})`);
-        this.barHeight = this.barRotate.append('g')
-                        .attr("class","barHeight")
-                        .attr("transform",`translate(0, ${-this.height})`)
-        this.bar = this.barHeight
-            .append("rect")
-            .attr("width", this.width)
-            .attr("height", this.height)
-            .style("fill","#2196F3")
-            .attr("class", "bar b"+this.index)
-            .attr("transform", `translate(-15,0)`);
-        this.text = this.barHeight.append("text")
-                    .attr("transform","translate(0,-10)")
-                    .style("text-anchor","middle")
-                    .html(`${this.value.toFixed(2)}`)
-    }
-
-    resetValue(newValue) {
-        this.value = newValue;
-        this.height = this.maxHeight*this.value;
-        this.barHeight.transition().duration(100)
-                .attr("transform",`translate(0,${-this.height})`)
-        this.bar.transition().duration(100).attr("height",this.height);
-        this.text.html(`${this.value.toFixed(2)}`)
-
-        if(this.value > 0.5) {
-            this.bar.style("fill","green")
-        }else {
-            this.bar.style("fill","#2196F3")
-        }
+    transitionColorEffect(color) {
+        let originalColor = this.color;
+        this.obstacleElement.transition("click").duration(200).attr("stroke", color).attr("opacity","1").transition("click").duration(200).attr("stroke", originalColor);
     }
 }
 
@@ -117,6 +53,17 @@ class Agent {
         this.centerX = config.centerX;
         this.centerY = config.centerY;
         this.transitionDuration = 200;
+        this.obstacles = config.obstacles;
+        this.obsProbMatrix = config.obsProbMatrix || {
+            door : {
+                obs_door : 1,
+                obs_wall : 0
+            },
+            wall : {
+                obs_door : 0,
+                obs_wall : 1
+            }
+        }
     }
 
     move() {
@@ -126,6 +73,24 @@ class Agent {
         this.robotRotate.transition().duration(this.transitionDuration)
                         .attr("transform","rotate("+(this.degreeTheta)+")")
     }
+    getPerception() {
+        let obstacleAtFront = this.obstacles[this.position];
+        let r = Math.random();
+        if(obstacleAtFront.type == "door") {
+            if(r <= this.obsProbMatrix["door"]["obs_door"]) {
+                return "door";
+            }else{
+                return "wall";
+            }
+        }else{
+            if(r <= this.obsProbMatrix["wall"]["obs_wall"]) {
+                return "wall";
+            }else{
+                return "door";
+            }
+        }
+    }
+
     changePosition(newPosition) {
         this.position = newPosition;
         this.move();
@@ -162,10 +127,10 @@ class Agent {
                             return function(t) {
                                 return `${opacityInterpolation(t)}`;
                             }
-                        })
+                        });
     }
     hide() {
-        // this.robotEle.attr("opacity",0);
+        this.robotEle.attr("opacity",0);
     }
     draw() {
         this.theta = this.position * (2*Math.PI / this.totalParts);
@@ -194,15 +159,16 @@ class Agent {
 }
 
 class Percept {
-    constructor({ele, value}) {
+    constructor({ele, agent}) {
         this.ele = ele;
-        this.value = value;
+        this.agent = agent;
     }
     draw() {
+        let value = this.agent.getPerception();
         this.perceptWrapper = this.ele.append('g')
                                 .attr("class", "perceptWrapper")
                                 .attr("width",100)
-                                .attr("transform","translate(50,0)");
+                                .attr("transform","translate(50,50)");
         this.activePercept = this.perceptWrapper
                                     .append("rect")
                                     .attr("class", "activePercept")
@@ -210,7 +176,7 @@ class Percept {
                                     .attr("height", 100)
                                     .attr("stroke","black")
                                     .attr("stroke-width", 2)
-                                    .style("fill",this.value === "door"?"#DEB887":"gray");
+                                    .style("fill",value === "door"?"#DEB887":"gray");
 
         this.perceptContainer = this.perceptWrapper
                                     .append("rect")
@@ -221,9 +187,18 @@ class Percept {
                                     .attr("stroke","black")
                                     .attr("stroke-width", 2)
                                     .attr("fill-opacity","0");
+        this.perceptTitle = this.perceptWrapper
+                                    .append("text")
+                                    .attr("transform","translate(50,-10)")
+                                    .style("text-anchor","middle")
+                                    .style("dominant-baseline","central")
+                                    .attr("fill","white")
+                                    .text("Bot's Perception")
 
     }
-    transition({direction, newValue}) {
+    transition({direction}) {
+        //Make sure to call this only after agent has changed position
+        let value = this.agent.getPerception();
         this.secondaryPercept = this.perceptWrapper
             .append("rect")
             .attr("class", "activePercept")
@@ -231,7 +206,7 @@ class Percept {
             .attr("height", 100)
             .attr("stroke","black")
             .attr("stroke-width", 2)
-            .style("fill",newValue === "door"?"#DEB887":"gray")
+            .style("fill",value === "door"?"#DEB887":"gray");
         if(direction == "left") {
             this.activePercept
                 .transition()
@@ -250,7 +225,6 @@ class Percept {
                 .duration(200)
                 .attr("width",0)
                 .remove();
-
                                         
             this.secondaryPercept       
                         .attr("x",100)
@@ -262,25 +236,9 @@ class Percept {
         this.activePercept = this.secondaryPercept
     }
 }
-function observeAtDoor(obstacle) {
-    let r = Math.random();
-    if(obstacle.type == "door") {
-        if(r <= obsProbMatrix["door"]["obs_door"]) {
-            return true;
-        }else{
-            return false;
-        }
-    }else{
-        if(r <= obsProbMatrix["wall"]["obs_wall"]) {
-            return false;
-        }else{
-            return true;
-        }
-    }
-}
 
 class Status {
-    constructor({currentState, startCallback, ele,x,y, width = 100, height=50}) {
+    constructor({currentState, startCallback, stopCallback, ele,x,y, width = 100, height=50}) {
         this.state = currentState;
         this.ele = ele;
         this.width = width;
@@ -289,10 +247,20 @@ class Status {
         this.y = y - this.height/2;
         let self = this;
         this.startCallback = startCallback;
+        this.stopHandler = stopCallback;
         this.startHandler = function() {
             self.startDiagram();
             self.startCallback();
         }
+        this.stopHandler = function() {
+            self.stopHandler();
+        }
+        this.buttonColor = "#602080";
+        this.movesColorInterpolation = d3.scaleLinear()
+                        .domain([0, 10, 20])
+                        .range(['#1a9850','#fff000','#d73027'])
+                        .clamp(true)
+                        .interpolate(d3.interpolateRgb);
     }
     startDiagram() {
         this.statusHolder.select("rect").transition().duration(200).style("opacity",0).remove();
@@ -304,22 +272,56 @@ class Status {
                         .style("dominant-baseline","central")
                         .attr("fill","white")
                         .style("cursor","pointer")
-                        .attr("transform",`translate(${this.width/2},${this.height/2})`)
+                        .style("font-weight", "bold")
+                        .style("letter-spacing","1.5px")
+                        .attr("fill",this.movesColorInterpolation(this.moves))
+                        .attr("transform",`translate(${this.width/2},${(this.height/2)-50})`)
                         .text(`Moves ${this.moves}`);
+        let self = this;
+        this.stopButton = this.statusHolder.append("rect")
+                        .attr("class","restart-button")
+                        .attr("rx",10)
+                        .attr("height",this.height)
+                        .attr("width",this.width)
+                        .attr("stroke","white")
+                        .attr("stroke-width",0)
+                        .attr("fill",this.buttonColor)
+                        .attr("fill-opacity","50%")
+                        .style("cursor","pointer")
+                        .on("click",() => {
+                            self.stopCallback();
+                            self.restart();
+                        });
+        this.stopButtonText = this.statusHolder
+                        .append("text")
+                        .style("text-anchor","middle")
+                        .style("dominant-baseline","central")
+                        .attr("fill","white")
+                        .style("cursor","pointer")
+                        .attr("transform",`translate(${this.width/2},${this.height/2})`)
+                        .style("font-weight", "bold")
+                        .style("letter-spacing","1.5px")
+                        .text("Give Up!")
+                        .on("click",() => {
+                            self.stopCallback();
+                            self.restart();
+                        });
     }
     incrementMove() {
         this.moves = this.moves + 1;
-        this.gameText.text(`Moves ${this.moves}`);
+        this.gameText && this.gameText.text(`Moves ${this.moves}`);
+        this.gameText && this.gameText.attr("fill",this.movesColorInterpolation(this.moves))
     }
     restart() {
         this.statusHolder.selectAll("*").remove();
         this.statusHolder.append("rect")
         .attr("class","start-button")
+        .attr("rx",10)
         .attr("height",this.height)
         .attr("width",this.width)
         .attr("stroke","white")
         .attr("stroke-width",0)
-        .attr("fill","#202060")
+        .attr("fill",this.buttonColor)
         .attr("fill-opacity","50%")
         .style("cursor","pointer")
         .on("click",this.startHandler);
@@ -330,6 +332,8 @@ class Status {
         .attr("fill","white")
         .style("cursor","pointer")
         .attr("transform",`translate(${this.width/2},${this.height/2})`)
+        .style("font-weight", "bold")
+        .style("letter-spacing","1.5px")
         .text("Start")
         .on("click",this.startHandler);
     }
@@ -339,105 +343,99 @@ class Status {
     }
 
 }
-const LocalizationProblem = {
-    init: function(selector, height, width) {
-        vpHeight = height;
-        vpWidth = width;    
-        let wrapper = d3.select(selector);
-        let svg = wrapper.append("svg")
-        .attr("height", vpHeight)
-        .attr("width", vpWidth);
-        let obstaclesEle = svg.append('g')
-        .classed("obstacles",true);
-        let barEle = svg.append('g')
-        .classed("bars",true);
-        let radius = 200;
-        let parts = 50;
+class LocalizationProblem {
+    constructor({selector, radius=200, parts=50}){
+        this.selector = selector;
+        this.radius = radius;
+        this.parts = parts;
+    }
+    bindKeyEvent() {
+        let self = this;
+        function keyDownEventHandler(e) {
+            switch(e.which) {
+                case 37:
+                        self.agent.goLeft();
+                        self.status.incrementMove();
+                        self.percept.transition({direction: "left"});
+                        break;
+                case 39: 
+                        self.agent.goRight();
+                        self.status.incrementMove();
+                        self.percept.transition({direction: "right"});
+                        break;
+            }
+        }
+        $(document).off("keydown",this.selector, keyDownEventHandler).keydown(keyDownEventHandler);
+    }
+    start() {
+        //Should start and restart
+        this.wrapper = d3.select(this.selector);
+        this.wrapper.selectAll("*").remove();
+        this.svg = this.wrapper.append("svg");
+        this.width = $(this.selector).innerWidth();
+        this.height = $(window).innerHeight();
+        this.svg
+            .attr("height", this.height)
+            .attr("width", this.width);
+        this.obstaclesEle = this.svg.append('g')
+            .classed("obstacles",true);
+        this.barEle = this.svg.append('g')
+            .classed("bars",true);
         
-        let obstacles = [], bars = [];
-        
-        _.each(_.range(parts), function(index) {
+        this.obstacles = [];
+        this.bars = [];
+        let self = this;
+        _.each(_.range(this.parts), function(index) {
             let obstacle = new Obstacle({
-                centerX : vpWidth/2,
-                centerY : vpHeight/2,
-                radius : radius,
+                centerX : self.width/2,
+                centerY : self.height/2,
+                radius : self.radius,
                 index : index,
-                parts : parts,
+                parts : self.parts,
                 type : (Math.random() > 0.5)?"door" : "wall",
-                ele : obstaclesEle
+                ele : self.obstaclesEle
             });
             obstacle.draw();
-            obstacles.push(obstacle);
-            
-            let bar = new Bar({
-                centerX : vpWidth/2,
-                centerY : vpHeight/2,
-                radius : radius+25,
-                index : index,
-                parts : parts,
-                ele : barEle,
-                value : 1/parts
-            });
-            // bar.draw();
-            bars.push(bar);
+            self.obstacles.push(obstacle);
         });
         
-        let agent = new Agent({
-            ele : svg,
-            parts : parts,
-            position : Math.floor(Math.random() * parts),
-            centerX : vpWidth/2,
-            centerY : vpHeight/2,
-            radius : radius - 30
+        this.agent = new Agent({
+            ele : this.svg,
+            parts : this.parts,
+            position : Math.floor(Math.random() * this.parts),
+            centerX : this.width/2,
+            centerY : this.height/2,
+            radius : this.radius - 30,
+            obstacles: this.obstacles
         });
-        let agentObservation;
-        agent.draw();
-        agentObservation = observeAtDoor(obstacles[agent.position]);
-        agentObservation = (agentObservation)?"door":"wall";
-        let percept = new Percept({ele: svg, value: agentObservation});
-        percept.draw();
+        this.agent.draw();
+        this.percept = new Percept({ele: this.svg, agent: this.agent});
+        this.percept.draw();
 
-        let status = new Status({ele: svg, currentState: "inactive",x:vpWidth/2,y:vpHeight/2});
+        this.status = new Status({ele: this.svg, currentState: "inactive",x:this.width/2,y:this.height/2});
+        this.bindKeyEvent();
+        window.obstacles = this.obstacles;
         let startHandler = function() {
-            agent.hideAnimate();
-            percept.transition({direction: "right", newValue: agent.position});
-            $(document).off("keydown").keydown(function(e) {
-                let agentObservation;
-                let newPosition;
-                switch(e.which) {
-                    case 37:
-                            newPosition = (agent.position - 1 + agent.totalParts)%agent.totalParts;
-                            agent.changePosition(newPosition);
-                            agentObservation = observeAtDoor(obstacles[agent.position]);
-                            status.incrementMove();
-                            agentObservation = (agentObservation)?"door":"wall";
-                            percept.transition({direction: "left", newValue:agentObservation});
-                            break;
-                    case 39: 
-                            newPosition = (agent.position + 1 + agent.totalParts)%agent.totalParts;
-                            agent.changePosition(newPosition);
-                            agentObservation = observeAtDoor(obstacles[agent.position]);
-                            status.incrementMove();
-                            agentObservation = (agentObservation)?"door":"wall";
-                            percept.transition({direction: "right", newValue:agentObservation});
-                            break;
-                }
-            });
-            _.each(_.range(parts), function(index) {
-                obstacles[index].obstacleElement.on("click", function(e) {
+            self.agent.hideAnimate();
+            self.percept.transition({direction: "right"});
+            _.each(_.range(self.parts), function(index) {
+                self.obstacles[index].obstacleElement.on("click", function(e) {
                     let clickTarget = parseInt(d3.select(e.target).attr("index"));
-                    if(clickTarget == agent.position) {
-                        status.restart();
-                        $(document).off("keydown");
-                        agent.show();
+                    if(clickTarget == self.agent.position) {
+                        self.obstacles[index].transitionColorEffect("green");
+                        self.status.restart();
+                        self.agent.show();
+                    } else { 
+                        self.obstacles[index].transitionColorEffect("red");
                     }
                 });
             });
         }
-        status.startCallback = startHandler;
-        status.draw();
-
-
+        this.status.startCallback = startHandler;
+        this.status.stopCallback = function() {
+            self.agent.show();
+        };
+        this.status.draw();
     }
 }
 
