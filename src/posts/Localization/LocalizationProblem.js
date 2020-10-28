@@ -339,8 +339,18 @@ class Status {
     }
 
 }
+
+class DiagramHelper {
+    constructor({ele}) {
+        this.ele = ele;
+    }
+    draw() {
+        this.diagramHelpHolder = this.ele.append("g").attr("class","diagram-helper");
+        this.diagramHelperText = this.diagramHelpHolder.append("text").text("Use Arrow Keys <-- -->");
+    }
+}
 class LocalizationProblem {
-    constructor({selector, radius=300, parts=50}){
+    constructor({selector, radius=200, parts=50}){
         this.selector = selector;
         this.radius = radius;
         this.parts = parts;
@@ -369,7 +379,7 @@ class LocalizationProblem {
         this.wrapper.selectAll("*").remove();
         this.svg = this.wrapper.append("svg");
         this.width = $(this.selector).innerWidth();
-        this.height = $(window).innerHeight();
+        this.height = Math.min($(window).innerHeight(),500);
         this.svg
             .attr("height", this.height)
             .attr("width", this.width);
@@ -408,6 +418,9 @@ class LocalizationProblem {
         this.percept = new Percept({ele: this.svg, agent: this.agent});
         this.percept.draw();
 
+        this.diagramHelper = new DiagramHelper({ele: this.svg});
+        this.diagramHelper.draw();
+        
         this.status = new Status({ele: this.svg, currentState: "inactive",x:this.width/2,y:this.height/2});
         this.bindKeyEvent();
         window.obstacles = this.obstacles;

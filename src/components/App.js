@@ -6,10 +6,12 @@ import { history } from "../_helpers/history";
 import LandingPage from "./LandingPage/LandingPage";
 import PostPage from "./PostPage/PostPage";
 import PageNotFound from "./PageNotFound";
+import NavBar from "./NavBar/NavBar";
 
 function App() {
   return (
     <div className="app">
+      <NavBar />
       <Router history={history}>
         <Switch>
           <Route exact path="/" component={LandingPage} />

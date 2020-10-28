@@ -1,0 +1,12 @@
+.sections {
+  section {
+    min-height: 500px;
+    opacity: .3;
+    &.graph-scroll-active {
+      opacity: 1;
+    }
+  }
+}
+.diagram-holder {
+  margin: 15% 0 10% 0;
+}

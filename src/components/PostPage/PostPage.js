@@ -8,10 +8,32 @@ function PostPage() {
   let postSlug = params && params.slug;
   return (
     <div className={"post-holder"}>
-      <h1>Post</h1>
-      {PostMap[postSlug]? PostMap[postSlug]() : <h2>Not Found</h2>}
+      <div className={"headings"}>
+        <div className={"left-heading"}>
+          <span className={"title"}>{PostMap[postSlug] ? PostMap[postSlug].title : ""}</span>
+          <ul className={"subtitle"}>
+            <li>Date: 20 / 10 / 2020</li>
+            <li>By: Rishav Agarwal</li>
+            <li>Estimated Read time: 30mins</li>
+          </ul>
+        </div>
+        <div className={"keypoints"}>
+          <div>ARTICLE KEYPOINTS</div>
+          <ul>
+            {PostMap[postSlug] &&
+              PostMap[postSlug].keypoints.map((point, index) => {
+                return (
+                  <li key={index} className={"keypoint"}>
+                    {point}
+                  </li>
+                );
+              })}
+          </ul>
+        </div>
+      </div>
+      {PostMap[postSlug] ? PostMap[postSlug].component() : <h2>Not Found</h2>}
     </div>
   );
-};
+}
 
 export default PostPage;
