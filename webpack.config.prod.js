@@ -76,15 +76,17 @@ module.exports = {
     },
   },
   plugins: [
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new HtmlWebPackPlugin({
       template: "./src/index.html",
-      filename: "./index.html"
+      filename: "./index.html",
+      favicon: "./src/favicon.svg"
     }),
     new webpack.ProvidePlugin({
       React: "react"
     }),
     new webpack.DefinePlugin({
       "process.env": JSON.stringify(dotenv.config().parsed)
-    })
-  ]
+    }),
+  ],
 };

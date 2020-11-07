@@ -1,4 +1,5 @@
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 const path = require("path");
 const webpack = require("webpack");
 const dotenv = require("dotenv");
@@ -79,14 +80,15 @@ module.exports = {
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new HtmlWebPackPlugin({
       template: "./src/index.html",
-      filename: "./index.html"
+      filename: "./index.html",
+      favicon: "./src/favicon.svg"
     }),
     new webpack.ProvidePlugin({
       React: "react"
     }),
     new webpack.DefinePlugin({
       "process.env": JSON.stringify(dotenv.config().parsed)
-    })
+    }),
   ],
   devServer: {
     port: 3000,
