@@ -9,7 +9,7 @@ export default function PostCard({post}) {
   return (
     <div className="post-card" onClick={() => {clickHandler(post.slug)}}>
       <span className={"title"}>{post.title}</span>
-      <ul className={"subtitle"}>
+      <ul className={"meta"}>
             <li>Date: 20 / 10 / 2020</li>
             <li>By: Rishav Agarwal</li>
             <li>Estimated Read time: 30mins</li>
