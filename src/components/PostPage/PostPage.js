@@ -11,7 +11,7 @@ function PostPage() {
       <div className={"headings"}>
         <div className={"left-heading"}>
           <span className={"title"}>{PostMap[postSlug] ? PostMap[postSlug].title : ""}</span>
-          <ul className={"subtitle"}>
+          <ul className={"meta"}>
             <li>Date: 20 / 10 / 2020</li>
             <li>By: Rishav Agarwal</li>
             <li>Estimated Read time: 30mins</li>

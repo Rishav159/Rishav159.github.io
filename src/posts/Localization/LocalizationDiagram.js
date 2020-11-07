@@ -36,36 +36,6 @@ function getCircumference(radius) {
     return 2 * Math.PI * radius;
 }
 
-class Obstacle {
-    constructor(config) {
-        this.centerX = config.centerX;
-        this.centerY = config.centerY;
-        this.radius = config.radius;
-        this.index = config.index;
-        this.totalParts = config.parts;
-        this.isDoor = config.isDoor;
-        this.ele = config.ele;
-        this.type = config.type;
-
-        this.theta = this.index*(2*Math.PI/this.totalParts); 
-        this.x = this.centerX 
-        this.y = this.centerY - this.radius;
-        this.circumference = getCircumference(this.radius);
-        this.length = this.circumference/this.totalParts - 2;
-        this.degreeTheta = this.theta*180 / Math.PI;
-    }
-    draw() {
-        this.ele.append("path")
-             .attr("d", "M"+this.x+" "+this.y+" a "+this.radius+" "+this.radius+" 0 0 1 0 "+(this.radius*2)+" a "+this.radius+" "+this.radius+" 0 0 1 0 "+(this.radius*(-2)))
-             .attr("fill","none")
-             .attr("stroke",this.type === "door"?"#DEB887":"gray")
-             .attr("stroke-width", 20)
-             .attr("stroke-dasharray",this.length+","+(this.circumference-this.length))
-             .attr("transform" , "rotate("+this.degreeTheta+","+this.centerX+","+this.centerY+")")
-             .attr("class", "obstacle c"+this.index);
-    }
-}
-
 class Bar {
     constructor(config) {
         this.totalParts = config.parts;
