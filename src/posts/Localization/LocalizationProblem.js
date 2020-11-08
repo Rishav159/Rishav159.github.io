@@ -180,7 +180,6 @@ class LocalizationProblem {
         
         this.status = new Status({root: this.svg, currentState: "inactive", x:this.width/2, y:this.height/2});
         this.bindKeyEvent();
-        window.obstacles = this.obstacles;
         let startHandler = function() {
             self.agent.hideAnimate();
             self.percept.transition({direction: "right"});
