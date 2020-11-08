@@ -33,7 +33,7 @@ class Percept {
                                   .attr("fill-opacity","0");
       this.perceptTitle = this.perceptWrapper
                                   .append("text")
-                                  .attr("transform","translate(50,-10)")
+                                  .attr("transform","translate(50,-15)")
                                   .style("text-anchor","middle")
                                   .style("dominant-baseline","central")
                                   .attr("fill","var(--color-headings)")

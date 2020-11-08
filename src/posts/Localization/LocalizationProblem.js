@@ -118,10 +118,12 @@ class LocalizationProblem {
             switch(e.which) {
                 case 37:
                     self.agent.goLeft();
+                    self.status.incrementMove();
                     self.percept.transition({direction: "left"});
                     break;
                 case 39: 
                     self.agent.goRight();
+                    self.status.incrementMove();
                     self.percept.transition({direction: "right"});
                     break;
             }
