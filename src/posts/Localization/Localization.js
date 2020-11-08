@@ -40,13 +40,13 @@ function Localization() {
         <div className={"column left-column sections"}>
           <section>
             <p>
-              Localization in the context of AI is a computational problem where a robot tries to find out its own location is a known map.
+              Localization in the context of AI is a computational problem where a robot tries to find out its own location in a known map.
               The robot has sensors that provides some information about its current environment. It is also free to move around the map and get updated sensor data. Using these information, the robot tries to figure out its own location.
             </p>
           </section>
           <section>
             <p>
-              In this diagram, the robot is in a circular corridor. Use your arrow keys to move the robot around the corridor. The grey represents a wall and brown represents a door. The robot has a primitive sensor that simply tells it whether it is standing in front of a door or a wall.
+              In this diagram, the robot is in a circular corridor. Use your arrow keys to move the robot around the corridor. <br></br><span className="text-color-legend wall"></span> represents a wall and <span className="text-color-legend door"></span> represents a door. The robot has a primitive sensor that simply tells it whether it is standing in front of a door or a wall. You can observe what the robot can see in the <span className="highlighter">Bot's perception.</span>.<br></br> Use the restart button to randomize the corridor.
             </p>
           </section>
         </div>
@@ -71,22 +71,14 @@ function Localization() {
         <div className={"column left-column sections"}>
           <section>
             <p>
-              Localization in the context of AI is a computational problem where a robot tries to find out its own location is a known map.
-              The robot has sensors that provides some information about its current environment. It is also free to move around the map and get updated sensor data. Using these information, the robot tries to figure out its own location.
+              Since you can see the robot in the map, its pretty easy to pinpoint its location. But what if you were in the robot's shoes? 
             </p>
           </section>
           <section>
             <p>
-              In this diagram, the robot is in a circular corridor. Use your arrow keys to move the robot around the corridor. The grey represents a wall and brown represents a door. The robot has a primitive sensor that simply tells it whether it is standing in front of a door or a wall.
-            </p>
-          </section>
-          <section>
-            <p>
-              In this problem, there is a robot inside a circular corridor. There are several doors in the corridor between the walls. The robot has a
-              sensor that given information on what is currently in front of it. You can see this perception of the robot. Use left and right arrow to
-              move the robot around. As the robots move, its perception will also change. Use this information to deduce the location of the robot in
-              the minimum number of moves. Once you have figured out the location, click on the door/wall to reveal the robot. Click on the start button
-              to start the game.
+              Click on the Start button to hide the robot. You can still use arrow keys to move the robot around. Try to figure out the robot's location using information from the <span className="highlighter">Bot's perception.</span><br />
+              Once you know the location, click on the door/wall to reveal the bot. <br /><br/>
+              Try to find the bot in less than 20 moves.
             </p>
           </section>
         </div>

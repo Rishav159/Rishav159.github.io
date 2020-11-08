@@ -36,7 +36,8 @@ class Percept {
                                   .attr("transform","translate(50,-10)")
                                   .style("text-anchor","middle")
                                   .style("dominant-baseline","central")
-                                  .attr("fill","white")
+                                  .attr("fill","var(--color-headings)")
+                                  .style("font-weight","bold")
                                   .text(this.title);
 
   }

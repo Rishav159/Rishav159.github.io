@@ -1,7 +1,7 @@
 .sections {
   margin-top: 200px;
   section {
-    min-height: 500px;
+    min-height: 700px;
     opacity: .3;
     &.graph-scroll-active {
       opacity: 1;
@@ -10,4 +10,19 @@
 }
 .diagram-holder {
   margin: 15% 0 10% 0;
+}
+.text-color-legend {
+  width: 20px;
+  height: 20px;
+  display: inline-table;
+  vertical-align: baseline;
+  &.door {
+    background-color: #DEB887;
+  }
+  &.wall {
+    background-color: gray;
+  }
+}
+.highlighter {
+  color: var(--color-headings);
 }
